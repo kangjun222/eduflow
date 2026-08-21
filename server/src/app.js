@@ -1,5 +1,7 @@
 const express = require('express');
 const { sql, getPool } = require('./db');
+const { AppError } = require('./errors');
+const coursesRouter = require('./routes/courses');
 
 const app = express();
 app.use(express.json());
@@ -37,14 +39,23 @@ app.get('/echo', async (req, res, next) => {
   }
 });
 
+app.use('/api/courses', coursesRouter);
+
 app.use((req, res) => {
-  res.status(404).json({ error: 'Not Found' });
+  res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Not Found' } });
 });
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
+  if (err instanceof AppError) {
+    res.status(err.status).json({
+      error: { code: err.code, message: err.message, details: err.details },
+    });
+    return;
+  }
+
   console.error(err);
-  res.status(500).json({ error: 'Internal Server Error' });
+  res.status(500).json({ error: { code: 'INTERNAL_ERROR', message: 'Internal Server Error' } });
 });
 
 module.exports = app;
