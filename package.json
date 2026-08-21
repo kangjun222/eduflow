@@ -1,16 +1,12 @@
 {
-  "name": "portfolio",
+  "name": "eduflow",
   "version": "1.0.0",
   "private": true,
-  "main": "src/server.js",
+  "description": "학원 수업·예약 관리 플랫폼",
   "scripts": {
-    "start": "node src/server.js",
-    "dev": "node --watch src/server.js",
-    "migrate": "node scripts/migrate.js"
-  },
-  "dependencies": {
-    "dotenv": "^17.4.2",
-    "express": "^5.2.1",
-    "mssql": "^12.7.0"
+    "dev": "npm --prefix server run dev",
+    "start": "npm --prefix server start",
+    "migrate": "npm --prefix server run migrate",
+    "setup": "npm --prefix server install"
   }
 }
