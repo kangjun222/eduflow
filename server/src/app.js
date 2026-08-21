@@ -2,6 +2,7 @@ const express = require('express');
 const { sql, getPool } = require('./db');
 const { AppError } = require('./errors');
 const coursesRouter = require('./routes/courses');
+const timetableRouter = require('./routes/timetable');
 
 const app = express();
 app.use(express.json());
@@ -40,6 +41,7 @@ app.get('/echo', async (req, res, next) => {
 });
 
 app.use('/api/courses', coursesRouter);
+app.use('/api', timetableRouter);
 
 app.use((req, res) => {
   res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Not Found' } });

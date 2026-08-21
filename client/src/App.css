@@ -1,0 +1,133 @@
+:root {
+  --bg: #f6f7f9;
+  --panel: #ffffff;
+  --border: #e3e6ea;
+  --text: #1a1d21;
+  --muted: #6b7280;
+  --accent: #4f7cff;
+  --danger: #d64545;
+  --success: #00a37a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Pretendard', -apple-system, 'Malgun Gothic', sans-serif;
+  font-size: 14px;
+}
+
+.app { max-width: 1400px; margin: 0 auto; padding: 24px; }
+
+.header {
+  display: flex; align-items: baseline; gap: 12px; margin-bottom: 20px;
+}
+.header h1 { margin: 0; font-size: 24px; letter-spacing: -0.5px; }
+.subtitle { color: var(--muted); }
+
+.layout {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  align-items: start;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 18px;
+  margin-bottom: 16px;
+}
+.panel h2 { margin: 0 0 14px; font-size: 15px; font-weight: 600; }
+.panel-head {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px;
+}
+.panel-head h2 { margin: 0; }
+.muted { color: var(--muted); }
+
+/* ---------- 폼 ---------- */
+.form-panel form { display: flex; flex-direction: column; gap: 12px; }
+.form-panel label {
+  display: flex; flex-direction: column; gap: 5px;
+  font-size: 12px; color: var(--muted);
+}
+.form-panel input, .form-panel select {
+  padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
+  font-size: 14px; color: var(--text); background: #fff;
+}
+.form-panel input:focus, .form-panel select:focus {
+  outline: 2px solid var(--accent); outline-offset: -1px;
+}
+.row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+.days { display: flex; gap: 4px; }
+.day-btn {
+  flex: 1; padding: 7px 0; border: 1px solid var(--border); background: #fff;
+  border-radius: 6px; cursor: pointer; font-size: 13px; color: var(--muted);
+}
+.day-btn.on { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+
+.submit {
+  margin-top: 4px; padding: 10px; border: none; border-radius: 6px;
+  background: var(--accent); color: #fff; font-size: 14px; font-weight: 600; cursor: pointer;
+}
+.submit:disabled { background: #b9c4dd; cursor: not-allowed; }
+
+.alert { margin-top: 14px; padding: 12px; border-radius: 8px; font-size: 13px; }
+.alert p { margin: 4px 0 0; }
+.alert ul { margin: 8px 0 0; padding-left: 18px; }
+.alert.ok { background: #e6f7f1; color: #05714f; border: 1px solid #a7e0cd; }
+.alert.error { background: #fdecec; color: #a52a2a; border: 1px solid #f3bcbc; }
+
+/* ---------- 시간표 ---------- */
+.week-nav { display: flex; align-items: center; gap: 8px; }
+.week-nav button {
+  border: 1px solid var(--border); background: #fff; border-radius: 6px;
+  width: 28px; height: 28px; cursor: pointer; color: var(--muted);
+}
+.week-label { font-size: 13px; color: var(--muted); min-width: 170px; text-align: center; }
+
+.grid { display: grid; grid-template-columns: 54px repeat(7, 1fr); border-top: 1px solid var(--border); }
+.day-head {
+  height: 38px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600; border-bottom: 1px solid var(--border);
+}
+.day-date { font-weight: 400; color: var(--muted); font-size: 11px; }
+
+.time-col .time-cell {
+  font-size: 11px; color: var(--muted); text-align: right; padding-right: 8px;
+  transform: translateY(-6px);
+}
+.day-col { border-left: 1px solid var(--border); }
+.day-body { position: relative; }
+.hour-line {
+  position: absolute; left: 0; right: 0; height: 1px; background: #f0f2f5;
+}
+
+.lesson {
+  position: absolute; left: 3px; right: 3px;
+  border-radius: 5px; padding: 4px 6px; overflow: hidden;
+  color: #fff; display: flex; flex-direction: column; gap: 1px;
+  font-size: 11px; line-height: 1.3;
+}
+.lesson strong { font-size: 11.5px; font-weight: 600; }
+.lesson span { opacity: 0.9; }
+.lesson-time { font-size: 10px; opacity: 0.75; }
+
+/* ---------- 테이블 ---------- */
+.table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.table th, .table td {
+  text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--border);
+}
+.table th { color: var(--muted); font-weight: 500; font-size: 12px; }
+.dot {
+  display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+  margin-right: 7px; vertical-align: middle;
+}
+
+@media (max-width: 1000px) {
+  .layout { grid-template-columns: 1fr; }
+}

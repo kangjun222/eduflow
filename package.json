@@ -5,9 +5,11 @@
   "description": "학원 수업·예약 관리 플랫폼",
   "scripts": {
     "dev": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
     "start": "npm --prefix server start",
     "migrate": "npm --prefix server run migrate",
-    "setup": "npm --prefix server install",
-    "seed": "npm --prefix server run seed"
+    "seed": "npm --prefix server run seed",
+    "setup": "npm --prefix server install && npm --prefix client install",
+    "build": "npm --prefix client run build"
   }
 }

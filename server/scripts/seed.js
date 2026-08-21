@@ -1,6 +1,7 @@
 require('dotenv').config();
 
 const { sql, getPool } = require('../src/db');
+const { createCourse } = require('../src/services/courseService');
 
 // 개발용 시드 데이터.
 // password_hash 는 인증 구현 전까지 자리표시자를 넣어둔다.
@@ -54,6 +55,33 @@ async function run() {
     SELECT id, name, role FROM users ORDER BY id;
   `);
   const rooms = await pool.request().query('SELECT id, name, capacity FROM rooms ORDER BY id;');
+
+  // 샘플 강좌는 강좌가 하나도 없을 때만 만든다. (재실행해도 중복되지 않도록)
+  const { recordset: existing } = await pool.request().query('SELECT COUNT(*) AS n FROM courses;');
+  if (existing[0].n === 0) {
+    const teachers = recordset.filter((u) => u.role === 'teacher');
+    const roomList = rooms.recordset;
+
+    const samples = [
+      { title: '중등 수학 A반', t: 0, r: 0, days: [2, 4], start: '19:00', end: '20:30' },
+      { title: '중등 영어 B반', t: 1, r: 1, days: [1, 3], start: '17:00', end: '18:30' },
+      { title: '고등 과학 심화', t: 2, r: 2, days: [6], start: '10:00', end: '12:00' },
+      { title: '중등 수학 심화', t: 0, r: 2, days: [5], start: '19:00', end: '21:00' },
+    ];
+
+    for (const s of samples) {
+      await createCourse({
+        title: s.title,
+        teacherId: teachers[s.t].id,
+        roomId: roomList[s.r].id,
+        capacity: Math.min(10, roomList[s.r].capacity),
+        startDate: '2026-09-01',
+        endDate: '2026-10-31',
+        schedules: s.days.map((d) => ({ dayOfWeek: d, startTime: s.start, endTime: s.end })),
+      });
+    }
+    console.log(`=== 샘플 강좌 ${samples.length}개 생성 ===`);
+  }
 
   console.log('=== 사용자 ===');
   recordset.forEach((u) => console.log(`  ${String(u.id).padStart(2)}  ${u.name}  (${u.role})`));

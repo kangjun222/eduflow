@@ -1,7 +1,16 @@
 const express = require('express');
 const courseService = require('../services/courseService');
+const timetableService = require('../services/timetableService');
 
 const router = express.Router();
+
+router.get('/', async (req, res, next) => {
+  try {
+    res.json(await timetableService.listCourses());
+  } catch (err) {
+    next(err);
+  }
+});
 
 // 강좌 개설.
 // 요일·시간 패턴을 받아 기간 전체의 수업 회차를 생성하고,
