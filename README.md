@@ -29,11 +29,16 @@ eduflow/
 ## 실행 방법
 
 ```bash
-npm run setup                    # 의존성 설치
+npm run setup                        # 의존성 설치
 cp server/.env.example server/.env   # DB 접속 정보 입력
-npm run migrate                  # 테이블 생성
-npm run dev                      # 서버 실행
+npm run migrate                      # 테이블 생성
+npm run seed                         # 샘플 데이터
+
+npm run dev          # 터미널 1 — API 서버 (localhost:3000)
+npm run dev:client   # 터미널 2 — 화면    (localhost:5173)
 ```
+
+환경 세팅과 작업 이어하기는 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) 참고.
 
 | 엔드포인트 | 설명 |
 |---|---|
