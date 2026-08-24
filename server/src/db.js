@@ -1,5 +1,9 @@
 const sql = require('mssql');
 
+// 호스팅 환경마다 인증서 정책이 달라 NODE_ENV 만으로는 맞출 수 없다.
+// 값이 없으면 지금까지의 동작(운영=암호화 켬, 로컬=인증서 검증 생략)을 그대로 따른다.
+const flag = (value, fallback) => (value === undefined ? fallback : value === 'true');
+
 const config = {
   server: process.env.DB_HOST,
   port: Number(process.env.DB_PORT ?? 1433),
@@ -10,8 +14,8 @@ const config = {
   options: {
     // 배포 환경에서는 암호화를 켜고 인증서를 검증한다.
     // 로컬 SQL Server는 자체 서명 인증서라 검증을 건너뛴다. (SSMS의 '서버 인증서 신뢰'와 같은 조치)
-    encrypt: process.env.NODE_ENV === 'production',
-    trustServerCertificate: process.env.NODE_ENV !== 'production',
+    encrypt: flag(process.env.DB_ENCRYPT, process.env.NODE_ENV === 'production'),
+    trustServerCertificate: flag(process.env.DB_TRUST_CERT, process.env.NODE_ENV !== 'production'),
   },
 };
 

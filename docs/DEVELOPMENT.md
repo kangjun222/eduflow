@@ -316,11 +316,37 @@ npm의 선택적 의존성 버그다. `node_modules`와 `package-lock.json`을 �
 
 MSSQL은 무료 매니지드 선택지가 사실상 **Azure SQL Database 무료 티어** 하나뿐이다.
 
-1. Azure SQL 무료 티어로 DB 생성 (생성 화면에서 "Free offer" 확인)
-2. `npm run build`로 React 빌드
-3. Express가 `client/dist`를 정적 서빙하도록 설정 (production 한정)
-4. 서버를 Azure App Service 등에 배포
-5. 운영 환경변수는 파일이 아니라 **호스팅 대시보드에 직접 입력**한다
+- [x] **Express가 `client/dist`를 정적 서빙** (production 한정) — 아래 참고
+- [ ] Azure SQL 무료 티어로 DB 생성 (생성 화면에서 "Free offer" 확인)
+- [ ] 생성한 DB에 `npm run migrate`, `npm run seed`
+- [ ] 서버를 Azure App Service 등에 배포 (`npm run build` → `npm start`)
+- [ ] 운영 환경변수를 **호스팅 대시보드에 직접 입력** (`.env` 파일은 올라가지 않는다)
+- [ ] README에 배포 링크와 테스트 계정 기재
+
+### 정적 서빙 (완료)
+
+`NODE_ENV=production` 일 때만 켜진다. 개발 중에는 Vite가 화면을 맡으므로 관여하지 않는다.
+
+- `/api` 로 시작하지 않는 GET 요청은 `index.html` 로 보낸다 (SPA 새로고침 대응)
+- `/api` 는 폴백에서 제외한다. 넘기면 없는 API를 불렀을 때 404 JSON 대신 HTML이 돌아와
+  프론트의 `res.json()` 이 엉뚱한 곳에서 터진다
+- 프록시 뒤에서 `X-Forwarded-Proto` 를 신뢰하도록 `trust proxy` 를 켠다.
+  안 켜면 HTTPS 요청을 http로 보고 secure 쿠키를 거절한다
+
+로컬에서 확인하려면 (로컬 SQL Server는 자체 서명 인증서라 암호화 설정을 덮어써야 한다):
+
+```bash
+npm run build
+cd server
+NODE_ENV=production DB_ENCRYPT=false DB_TRUST_CERT=true PORT=3010 node src/server.js
+```
+
+확인한 것 — 루트가 React HTML, JS 번들 200, `/timetable` 폴백 200,
+`/api/nope` 는 JSON 404, 로그인 200에 쿠키 `secure` 플래그 켜짐.
+
+> `secure` 쿠키는 브라우저에서 HTTPS 가 아니면 저장되지 않는다.
+> 위 명령으로 띄운 http 주소를 브라우저로 열면 **로그인이 안 되는 게 정상이다.**
+> 정적 서빙 확인용이지 브라우저로 쓰라고 만든 모드가 아니다.
 
 ### 주의
 

@@ -1,3 +1,5 @@
+const path = require('path');
+
 const express = require('express');
 const cookieParser = require('cookie-parser');
 const { sql, getPool } = require('./db');
@@ -8,6 +10,13 @@ const enrollmentsRouter = require('./routes/enrollments');
 const timetableRouter = require('./routes/timetable');
 
 const app = express();
+
+// App Service 같은 리버스 프록시 뒤에서는 원래 프로토콜이 X-Forwarded-Proto 로 온다.
+// 이걸 신뢰하지 않으면 HTTPS 요청을 http 로 보고 secure 쿠키를 거절한다.
+if (process.env.NODE_ENV === 'production') {
+  app.set('trust proxy', 1);
+}
+
 app.use(express.json());
 // 인증 토큰이 httpOnly 쿠키로 오므로 req.cookies 를 채워둔다.
 app.use(cookieParser());
@@ -49,6 +58,25 @@ app.use('/api/auth', authRouter);
 app.use('/api/courses', coursesRouter);
 app.use('/api/enrollments', enrollmentsRouter);
 app.use('/api', timetableRouter);
+
+// 운영에서는 Express 가 React 빌드까지 서빙한다.
+// 프론트와 API 가 같은 출처가 되므로 CORS 설정이 필요 없고,
+// httpOnly 쿠키가 개발할 때와 똑같이 동작한다. 배포 대상도 서버 하나로 줄어든다.
+if (process.env.NODE_ENV === 'production') {
+  const clientDist = path.join(__dirname, '..', '..', 'client', 'dist');
+  app.use(express.static(clientDist));
+
+  // SPA 새로고침 대응. /timetable 같은 주소로 직접 들어와도 index.html 을 준다.
+  // /api 는 넘기지 않는다. 넘기면 없는 API 를 부를 때 404 JSON 대신 HTML 이 돌아와
+  // 프론트의 res.json() 이 엉뚱한 곳에서 터진다.
+  app.use((req, res, next) => {
+    if (req.method !== 'GET' || req.path.startsWith('/api')) {
+      next();
+      return;
+    }
+    res.sendFile(path.join(clientDist, 'index.html'));
+  });
+}
 
 app.use((req, res) => {
   res.status(404).json({ error: { code: 'NOT_FOUND', message: 'Not Found' } });
