@@ -310,9 +310,14 @@ npm의 선택적 의존성 버그다. `node_modules`와 `package-lock.json`을 �
 
 ---
 
-## 9. 배포 계획
+## 9. 배포 — 보류
 
-**아직 안 했다.** 수강신청까지 끝나면 진행한다.
+**하지 않기로 했다.** Azure 무료 계정이 카드 등록을 요구하는데 그걸 하지 않기로 했다.
+대신 README 맨 위에 **데모 GIF**를 넣고, 로컬에서 네 줄로 띄울 수 있게 해뒀다.
+녹화 절차는 [데모 GIF 만들기](DEMO.md) 참고.
+
+나중에 마음이 바뀌면 아래 계획과 [배포 가이드](DEPLOY.md)가 그대로 남아 있다.
+PostgreSQL로 옮기면 무료 선택지가 많아지지만, 잠금 코드를 다시 써야 한다.
 
 MSSQL은 무료 매니지드 선택지가 사실상 **Azure SQL Database 무료 티어** 하나뿐이다.
 
@@ -361,8 +366,9 @@ NODE_ENV=production DB_ENCRYPT=false DB_TRUST_CERT=true PORT=3010 node src/serve
 
 ## 10. 남은 할 일 (포트폴리오용)
 
-- [ ] README 맨 위에 **데모 GIF** 추가 — 충돌로 막히는 장면이 가장 효과적이다
-- [ ] 배포 링크와 테스트 계정을 README에 기재
+- [ ] **데모 GIF 녹화** — [DEMO.md](DEMO.md) 대로. 충돌로 막히는 장면 하나면 된다
+- [x] 테스트 계정을 README에 기재
+- [x] README에 구현 현황과 엔드포인트 목록 정리
 - [ ] GitHub 레포 이름을 `portfolio` → `eduflow` 로 변경 (`gh repo rename eduflow`)
 - [ ] 개발하며 막힌 것을 그때그때 README 트러블슈팅에 기록
       (나중에 기억으로 복원하려면 안 된다)
