@@ -49,16 +49,18 @@ body {
 .muted { color: var(--muted); }
 
 /* ---------- 폼 ---------- */
-.form-panel form { display: flex; flex-direction: column; gap: 12px; }
-.form-panel label {
+.form-panel form, .login-panel form { display: flex; flex-direction: column; gap: 12px; }
+.form-panel label, .login-panel label {
   display: flex; flex-direction: column; gap: 5px;
   font-size: 12px; color: var(--muted);
 }
-.form-panel input, .form-panel select {
+.form-panel input, .form-panel select,
+.login-panel input {
   padding: 8px 10px; border: 1px solid var(--border); border-radius: 6px;
   font-size: 14px; color: var(--text); background: #fff;
 }
-.form-panel input:focus, .form-panel select:focus {
+.form-panel input:focus, .form-panel select:focus,
+.login-panel input:focus {
   outline: 2px solid var(--accent); outline-offset: -1px;
 }
 .row { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
@@ -141,12 +143,18 @@ body {
   display: flex; align-items: center; justify-content: center;
   padding: 24px;
 }
-.login-panel { width: 100%; max-width: 380px; }
-.login-panel .header { margin-bottom: 20px; }
+.login-panel {
+  width: 100%; max-width: 360px;
+  padding: 28px 24px; margin-bottom: 0;
+}
+/* 로그인 카드에서는 제목을 가운데로 쌓는다. 상단 바와 달리 옆에 놓을 것이 없다. */
+.login-panel .header {
+  flex-direction: column; align-items: center; gap: 4px; margin-bottom: 22px;
+}
 .login-hint {
-  margin: 16px 0 0; padding-top: 14px;
+  margin: 18px 0 0; padding-top: 14px;
   border-top: 1px solid var(--border);
-  font-size: 12px; line-height: 1.7;
+  font-size: 12px; line-height: 1.8; text-align: center;
 }
 .login-hint code {
   background: var(--bg); padding: 1px 5px; border-radius: 4px;
