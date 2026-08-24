@@ -53,7 +53,12 @@ function Timetable({ user }) {
   const [meta, setMeta] = useState({ teachers: [], rooms: [], students: [] });
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
+  const [myEnrollments, setMyEnrollments] = useState([]);
+  const [enrollError, setEnrollError] = useState(null);
+  const [busyCourseId, setBusyCourseId] = useState(null);
   const { logout } = useAuth();
+
+  const isStudent = user.role === 'student';
 
   const weekEnd = useMemo(() => addDays(weekStart, 6), [weekStart]);
 
@@ -76,6 +81,49 @@ function Timetable({ user }) {
   useEffect(() => {
     loadTimetable();
   }, [loadTimetable]);
+
+  const loadEnrollments = useCallback(async () => {
+    if (!isStudent) return;
+    const res = await fetch('/api/enrollments/me');
+    if (res.ok) setMyEnrollments(await res.json());
+  }, [isStudent]);
+
+  useEffect(() => {
+    loadEnrollments();
+  }, [loadEnrollments]);
+
+  // 신청한 강좌 id 모음. 표에서 버튼 상태를 정하는 데 쓴다.
+  const enrolledIds = useMemo(
+    () => new Set(myEnrollments.map((e) => e.courseId)),
+    [myEnrollments]
+  );
+
+  async function toggleEnroll(course) {
+    const enrolled = enrolledIds.has(course.id);
+    setBusyCourseId(course.id);
+    setEnrollError(null);
+    try {
+      const res = await fetch(
+        enrolled ? `/api/enrollments/${course.id}` : '/api/enrollments',
+        {
+          method: enrolled ? 'DELETE' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: enrolled ? undefined : JSON.stringify({ courseId: course.id }),
+        }
+      );
+      if (!res.ok) {
+        const body = await res.json();
+        setEnrollError(body.error?.message ?? '요청에 실패했습니다.');
+      }
+      // 성공이든 실패든 서버 상태를 다시 읽는다.
+      // 정원이 찬 경우처럼 남이 바꿔놓은 값이 화면에 반영돼야 한다.
+      await Promise.all([loadEnrollments(), loadTimetable()]);
+    } catch {
+      setEnrollError('서버에 연결할 수 없습니다.');
+    } finally {
+      setBusyCourseId(null);
+    }
+  }
 
   const byDay = useMemo(() => {
     const map = Array.from({ length: 7 }, () => []);
@@ -174,6 +222,7 @@ function Timetable({ user }) {
 
       <section className="panel">
         <h2>개설된 강좌 ({courses.length})</h2>
+        {enrollError && <div className="alert error"><p>{enrollError}</p></div>}
         {courses.length === 0 ? (
           <p className="muted">아직 개설된 강좌가 없습니다.</p>
         ) : (
@@ -182,19 +231,35 @@ function Timetable({ user }) {
               <tr>
                 <th>강좌</th><th>강사</th><th>강의실</th>
                 <th>기간</th><th>회차</th><th>수강</th>
+                {isStudent && <th>신청</th>}
               </tr>
             </thead>
             <tbody>
-              {courses.map((c) => (
-                <tr key={c.id}>
-                  <td><span className="dot" style={{ background: colorOf(c.id) }} />{c.title}</td>
-                  <td>{c.teacherName}</td>
-                  <td>{c.roomName}</td>
-                  <td className="muted">{c.startDate} ~ {c.endDate}</td>
-                  <td>{c.lessonCount}</td>
-                  <td>{c.enrolledCount} / {c.capacity}</td>
-                </tr>
-              ))}
+              {courses.map((c) => {
+                const enrolled = enrolledIds.has(c.id);
+                const full = c.enrolledCount >= c.capacity;
+                return (
+                  <tr key={c.id}>
+                    <td><span className="dot" style={{ background: colorOf(c.id) }} />{c.title}</td>
+                    <td>{c.teacherName}</td>
+                    <td>{c.roomName}</td>
+                    <td className="muted">{c.startDate} ~ {c.endDate}</td>
+                    <td>{c.lessonCount}</td>
+                    <td className={full ? 'full' : undefined}>{c.enrolledCount} / {c.capacity}</td>
+                    {isStudent && (
+                      <td>
+                        <button
+                          className={enrolled ? 'enroll-btn on' : 'enroll-btn'}
+                          disabled={busyCourseId === c.id || (!enrolled && full)}
+                          onClick={() => toggleEnroll(c)}
+                        >
+                          {enrolled ? '취소' : full ? '정원 마감' : '신청'}
+                        </button>
+                      </td>
+                    )}
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         )}

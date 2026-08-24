@@ -4,6 +4,7 @@ const { sql, getPool } = require('./db');
 const { AppError } = require('./errors');
 const authRouter = require('./routes/auth');
 const coursesRouter = require('./routes/courses');
+const enrollmentsRouter = require('./routes/enrollments');
 const timetableRouter = require('./routes/timetable');
 
 const app = express();
@@ -46,6 +47,7 @@ app.get('/echo', async (req, res, next) => {
 
 app.use('/api/auth', authRouter);
 app.use('/api/courses', coursesRouter);
+app.use('/api/enrollments', enrollmentsRouter);
 app.use('/api', timetableRouter);
 
 app.use((req, res) => {

@@ -171,3 +171,20 @@ body {
   color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer;
 }
 .link-btn:hover { color: var(--text); }
+
+/* ── 수강신청 ────────────────────────────────────── */
+
+.enroll-btn {
+  padding: 5px 14px; border-radius: 6px; cursor: pointer;
+  border: 1px solid var(--accent); background: var(--accent); color: #fff;
+  font-size: 12px; font-weight: 600;
+}
+.enroll-btn.on {
+  background: #fff; color: var(--muted); border-color: var(--border);
+}
+.enroll-btn:disabled {
+  background: var(--bg); color: var(--muted); border-color: var(--border);
+  cursor: not-allowed; font-weight: 400;
+}
+/* 정원이 찬 강좌는 숫자만 봐도 알 수 있게 한다. */
+.table td.full { color: var(--danger); font-weight: 600; }

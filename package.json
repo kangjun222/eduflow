@@ -9,6 +9,7 @@
     "start": "npm --prefix server start",
     "migrate": "npm --prefix server run migrate",
     "seed": "npm --prefix server run seed",
+    "stress:enroll": "npm --prefix server run stress:enroll",
     "setup": "npm --prefix server install && npm --prefix client install",
     "build": "npm --prefix client run build"
   }
