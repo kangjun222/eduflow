@@ -366,7 +366,7 @@ NODE_ENV=production DB_ENCRYPT=false DB_TRUST_CERT=true PORT=3010 node src/serve
 
 ## 10. 남은 할 일 (포트폴리오용)
 
-- [ ] **데모 GIF 녹화** — [DEMO.md](DEMO.md) 대로. 충돌로 막히는 장면 하나면 된다
+- [ ] **데모 스크린샷** — [DEMO.md](DEMO.md) 대로. 충돌로 막히는 화면 한 장이면 된다
 - [x] 테스트 계정을 README에 기재
 - [x] README에 구현 현황과 엔드포인트 목록 정리
 - [ ] GitHub 레포 이름을 `portfolio` → `eduflow` 로 변경 (`gh repo rename eduflow`)
