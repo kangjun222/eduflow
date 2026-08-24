@@ -1,4 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useAuth } from './auth.jsx';
+import Login from './Login.jsx';
 import './App.css';
 
 const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -9,6 +11,8 @@ const ROW_HEIGHT = 44; // 1시간당 픽셀
 // 강좌마다 다른 색을 주되, 같은 강좌는 항상 같은 색이 되도록 id 기반으로 고른다.
 const PALETTE = ['#4f7cff', '#00a37a', '#e8590c', '#9333ea', '#0891b2', '#c2255c'];
 const colorOf = (courseId) => PALETTE[courseId % PALETTE.length];
+
+const ROLE_LABEL = { admin: '관리자', teacher: '강사', student: '학생' };
 
 function toDateInput(d) {
   const pad = (n) => String(n).padStart(2, '0');
@@ -33,12 +37,23 @@ const toMinutes = (hhmm) => {
   return h * 60 + m;
 };
 
+// 로그인하지 않았으면 어떤 화면도 보여주지 않는다.
+// 화면을 가리는 것만으로는 보호가 되지 않으므로 API 쪽에도 같은 검사가 걸려 있다.
 export default function App() {
+  const { user, checking } = useAuth();
+
+  if (checking) return <p className="muted center-note">확인 중…</p>;
+  if (!user) return <Login />;
+  return <Timetable user={user} />;
+}
+
+function Timetable({ user }) {
   const [weekStart, setWeekStart] = useState(() => startOfWeek(new Date('2026-09-01')));
   const [lessons, setLessons] = useState([]);
   const [meta, setMeta] = useState({ teachers: [], rooms: [], students: [] });
   const [courses, setCourses] = useState([]);
   const [loading, setLoading] = useState(false);
+  const { logout } = useAuth();
 
   const weekEnd = useMemo(() => addDays(weekStart, 6), [weekStart]);
 
@@ -78,10 +93,21 @@ export default function App() {
       <header className="header">
         <h1>EduFlow</h1>
         <span className="subtitle">학원 수업·예약 관리</span>
+        <span className="who">
+          {user.name} <span className="role-tag">{ROLE_LABEL[user.role]}</span>
+        </span>
+        <button className="link-btn" onClick={logout}>로그아웃</button>
       </header>
 
       <div className="layout">
-        <CourseForm meta={meta} onCreated={loadTimetable} />
+        {user.role === 'admin' ? (
+          <CourseForm meta={meta} onCreated={loadTimetable} />
+        ) : (
+          <section className="panel form-panel">
+            <h2>강좌 개설</h2>
+            <p className="muted">관리자만 강좌를 개설할 수 있습니다.</p>
+          </section>
+        )}
 
         <section className="panel timetable-panel">
           <div className="panel-head">

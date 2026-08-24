@@ -131,3 +131,35 @@ body {
 @media (max-width: 1000px) {
   .layout { grid-template-columns: 1fr; }
 }
+
+/* ── 인증 ───────────────────────────────────────── */
+
+.center-note { text-align: center; padding: 60px 0; }
+
+.login-page {
+  min-height: 100vh;
+  display: flex; align-items: center; justify-content: center;
+  padding: 24px;
+}
+.login-panel { width: 100%; max-width: 380px; }
+.login-panel .header { margin-bottom: 20px; }
+.login-hint {
+  margin: 16px 0 0; padding-top: 14px;
+  border-top: 1px solid var(--border);
+  font-size: 12px; line-height: 1.7;
+}
+.login-hint code {
+  background: var(--bg); padding: 1px 5px; border-radius: 4px;
+}
+
+/* 헤더 오른쪽으로 밀어내기 */
+.who { margin-left: auto; color: var(--muted); }
+.role-tag {
+  margin-left: 4px; padding: 2px 7px; border-radius: 999px;
+  background: var(--accent); color: #fff; font-size: 11px;
+}
+.link-btn {
+  background: none; border: none; padding: 0;
+  color: var(--muted); font-size: 13px; text-decoration: underline; cursor: pointer;
+}
+.link-btn:hover { color: var(--text); }

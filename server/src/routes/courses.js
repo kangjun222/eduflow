@@ -1,6 +1,7 @@
 const express = require('express');
 const courseService = require('../services/courseService');
 const timetableService = require('../services/timetableService');
+const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -12,10 +13,10 @@ router.get('/', async (req, res, next) => {
   }
 });
 
-// 강좌 개설.
+// 강좌 개설. 관리자만 호출할 수 있다.
 // 요일·시간 패턴을 받아 기간 전체의 수업 회차를 생성하고,
 // 강사·강의실 시간 충돌이 있으면 409 로 거절한다.
-router.post('/', async (req, res, next) => {
+router.post('/', requireAuth, requireRole('admin'), async (req, res, next) => {
   try {
     const result = await courseService.createCourse(req.body);
     res.status(201).json(result);

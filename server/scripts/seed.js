@@ -1,11 +1,15 @@
 require('dotenv').config();
 
+const bcrypt = require('bcryptjs');
+
 const { sql, getPool } = require('../src/db');
 const { createCourse } = require('../src/services/courseService');
 
 // 개발용 시드 데이터.
-// password_hash 는 인증 구현 전까지 자리표시자를 넣어둔다.
-const PLACEHOLDER_HASH = 'SEED_PLACEHOLDER_NOT_A_REAL_HASH';
+// 시드 계정은 전부 같은 비밀번호를 쓴다. 개발용이므로 노출돼도 무방하다.
+const SEED_PASSWORD = process.env.SEED_PASSWORD ?? 'eduflow123!';
+// 비용 10은 로그인 1회에 약 100ms 를 쓰게 해 무차별 대입을 느리게 만든다.
+const SEED_PASSWORD_HASH = bcrypt.hashSync(SEED_PASSWORD, 10);
 
 const USERS = [
   { email: 'admin@eduflow.test', name: '박원장', role: 'admin' },
@@ -32,11 +36,17 @@ async function run() {
       .input('email', sql.NVarChar(255), u.email)
       .input('name', sql.NVarChar(50), u.name)
       .input('role', sql.VarChar(10), u.role)
-      .input('hash', sql.NVarChar(255), PLACEHOLDER_HASH)
+      .input('hash', sql.NVarChar(255), SEED_PASSWORD_HASH)
       .query(`
-        IF NOT EXISTS (SELECT 1 FROM users WHERE email = @email)
-        INSERT INTO users (email, password_hash, name, role)
-        VALUES (@email, @hash, @name, @role);
+        -- 이미 있는 계정은 비밀번호만 다시 맞춘다.
+        -- 자리표시자 해시로 만들어진 기존 시드 계정도 이 경로로 복구된다.
+        IF EXISTS (SELECT 1 FROM users WHERE email = @email)
+            UPDATE users
+               SET password_hash = @hash, updated_at = SYSDATETIME()
+             WHERE email = @email;
+        ELSE
+            INSERT INTO users (email, password_hash, name, role)
+            VALUES (@email, @hash, @name, @role);
       `);
   }
 
@@ -84,6 +94,7 @@ async function run() {
   }
 
   console.log('=== 사용자 ===');
+  console.log(`  (전 계정 공통 비밀번호: ${SEED_PASSWORD})`);
   recordset.forEach((u) => console.log(`  ${String(u.id).padStart(2)}  ${u.name}  (${u.role})`));
   console.log('=== 강의실 ===');
   rooms.recordset.forEach((r) => console.log(`  ${String(r.id).padStart(2)}  ${r.name}  정원 ${r.capacity}`));

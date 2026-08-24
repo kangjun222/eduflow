@@ -63,6 +63,7 @@ Start-Service MSSQLSERVER   # 꺼져 있으면
 | 데이터베이스 | `portfolio_dev` |
 | DB 로그인 | `portfolio_app` (해당 DB에만 `db_owner`) |
 | 비밀번호 | `server/.env` 에 있음 (git에 올라가지 않음) |
+| 토큰 서명 키 | `server/.env` 의 `JWT_SECRET`, 유효기간 `JWT_EXPIRES_IN=2h` |
 
 ### SSMS로 DB 볼 때
 
@@ -109,7 +110,8 @@ Vite가 `Node 20.19+ 필요` 경고를 띄우지만 동작에는 문제없다.
    ALTER ROLE db_owner ADD MEMBER portfolio_app;
    ```
 
-3. **환경변수** — `server/.env.example`을 `server/.env`로 복사하고 비밀번호를 채운다.
+3. **환경변수** — `server/.env.example`을 `server/.env`로 복사하고 DB 비밀번호와 `JWT_SECRET`을 채운다.
+   `JWT_SECRET`은 파일 안 주석의 명령으로 만든다. 비어 있으면 서버가 뜰 때가 아니라 첫 로그인에서 실패한다.
 
 4. **설치와 초기화**
 
@@ -128,23 +130,30 @@ Vite가 `Node 20.19+ 필요` 경고를 띄우지만 동작에는 문제없다.
 [x] 마이그레이션 실행기
 [x] 강좌 개설 API + 시간 충돌 방지     ← 핵심 기술 포인트 1
 [x] 주간 시간표 화면 (React)
-[ ] 인증 (로그인 · 역할별 권한)        ← 다음 작업
-[ ] 수강신청 + 정원 초과 방지          ← 핵심 기술 포인트 2
+[x] 인증 (로그인 · 역할별 권한)
+[ ] 수강신청 + 정원 초과 방지          ← 다음 작업 / 핵심 기술 포인트 2
 [ ] 출결 처리
 [ ] 배포
 ```
 
 ### 지금 되는 것
 
+- 로그인 / 로그아웃, 새로고침해도 상태 유지
 - 시간표에서 주간 수업을 색깔 블록으로 확인
-- 화면에서 강좌 개설, 충돌 시 빨간 경고로 차단
+- 화면에서 강좌 개설, 충돌 시 빨간 경고로 차단 (관리자만)
 - 샘플 데이터: 강사 3 / 학생 3 / 강의실 3 / 강좌 4
+
+**시드 계정** — 비밀번호는 전부 `eduflow123!` (`SEED_PASSWORD` 환경변수로 변경 가능)
+
+| 이메일 | 역할 |
+|---|---|
+| `admin@eduflow.test` | 관리자 — 강좌 개설 가능 |
+| `teacher1@eduflow.test` | 강사 |
+| `student1@eduflow.test` | 학생 |
 
 ---
 
-## 6. 다음 작업 — 인증
-
-의존성은 이미 설치돼 있다 (`bcryptjs`, `jsonwebtoken`, `cookie-parser`).
+## 6. 인증 — 완료
 
 ### 정한 것
 
@@ -155,17 +164,33 @@ Vite가 `Node 20.19+ 필요` 경고를 띄우지만 동작에는 문제없다.
 프론트와 백이 같은 출처가 되므로 쿠키가 그대로 동작하고, CORS 설정도 필요 없다.
 배포 대상이 서버 하나로 줄어 무료 티어에도 유리하다.
 
-### 할 일
+### 만든 것
 
-- [ ] `server/src/services/authService.js` — 로그인, 비밀번호 검증
-- [ ] `server/src/middleware/auth.js` — 토큰 검증, 역할 확인
-- [ ] `server/src/routes/auth.js` — `POST /api/auth/login`, `/logout`, `GET /api/auth/me`
-- [ ] `.env`에 `JWT_SECRET` 추가 (`.env.example`에도 자리만)
-- [ ] 시드의 `password_hash`를 진짜 bcrypt 해시로 교체
-- [ ] `POST /api/courses`를 관리자만 호출 가능하도록 제한
-- [ ] React 로그인 화면 + 비로그인 시 접근 차단
+| 파일 | 역할 |
+|---|---|
+| `server/src/services/authService.js` | 로그인, 비밀번호 검증, 토큰 발급·검증 |
+| `server/src/middleware/auth.js` | `requireAuth` / `requireRole`, 쿠키 옵션 |
+| `server/src/routes/auth.js` | `POST /api/auth/login`, `/logout`, `GET /api/auth/me` |
+| `client/src/auth.jsx` | `AuthProvider` — `/me` 로 로그인 상태 복원 |
+| `client/src/Login.jsx` | 로그인 화면 |
 
-### 그다음 — 수강신청
+`errors.js`에 401/403 헬퍼를 추가하고, `POST /api/courses`에 `requireAuth, requireRole('admin')`을 걸었다.
+
+### 확인한 동작
+
+| 요청 | 결과 |
+|---|---|
+| 없는 이메일 / 틀린 비밀번호 | 401, **같은 메시지** (계정 존재 여부를 흘리지 않는다) |
+| 로그인 성공 | 200 + httpOnly 쿠키, 본문에는 토큰 없음 |
+| 위조·만료 토큰으로 `/me` | 401 |
+| 비로그인으로 강좌 개설 | 401 |
+| 학생 계정으로 강좌 개설 | 403 |
+| 관리자로 강좌 개설 | 통과 (이후 기존 검증 로직으로) |
+| `GET /api/courses`, `/api/timetable` | 200 — 조회는 열어둔 상태 |
+
+---
+
+## 6-1. 다음 작업 — 수강신청
 
 정원 초과 방지가 목표다. 강사 충돌과 같은 종류의 동시성 문제지만
 "겹치는 행이 있나"가 아니라 "몇 명인가"를 세는 방식이라 잠금 거는 지점이 다르다.
@@ -217,7 +242,7 @@ npm의 선택적 의존성 버그다. `node_modules`와 `package-lock.json`을 �
 
 ## 9. 배포 계획
 
-**아직 안 했다. 인증이 끝나면 바로 진행한다.**
+**아직 안 했다.** 수강신청까지 끝나면 진행한다.
 
 MSSQL은 무료 매니지드 선택지가 사실상 **Azure SQL Database 무료 티어** 하나뿐이다.
 

@@ -10,7 +10,11 @@ class AppError extends Error {
 }
 
 const badRequest = (message, details) => new AppError(400, 'BAD_REQUEST', message, details);
+// 401 은 "누구인지 모른다", 403 은 "누구인지 알지만 권한이 없다" 이다.
+// 둘을 섞으면 클라이언트가 로그인 화면으로 보낼지 말지 판단할 수 없다.
+const unauthorized = (message) => new AppError(401, 'UNAUTHORIZED', message);
+const forbidden = (message) => new AppError(403, 'FORBIDDEN', message);
 const notFound = (message) => new AppError(404, 'NOT_FOUND', message);
 const conflict = (message, details) => new AppError(409, 'CONFLICT', message, details);
 
-module.exports = { AppError, badRequest, notFound, conflict };
+module.exports = { AppError, badRequest, unauthorized, forbidden, notFound, conflict };

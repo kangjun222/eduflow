@@ -1,11 +1,15 @@
 const express = require('express');
+const cookieParser = require('cookie-parser');
 const { sql, getPool } = require('./db');
 const { AppError } = require('./errors');
+const authRouter = require('./routes/auth');
 const coursesRouter = require('./routes/courses');
 const timetableRouter = require('./routes/timetable');
 
 const app = express();
 app.use(express.json());
+// 인증 토큰이 httpOnly 쿠키로 오므로 req.cookies 를 채워둔다.
+app.use(cookieParser());
 
 // 서버가 살아있는지만 확인 (DB 미포함)
 app.get('/health', (req, res) => {
@@ -40,6 +44,7 @@ app.get('/echo', async (req, res, next) => {
   }
 });
 
+app.use('/api/auth', authRouter);
 app.use('/api/courses', coursesRouter);
 app.use('/api', timetableRouter);
 
